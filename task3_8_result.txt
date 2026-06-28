@@ -9,7 +9,7 @@ revenue: $1
 =====================================
  Tong doanh thu 
 =====================================
-Sum: $432720193169.00
+Sum: $432719225875.00
 1  | Avatar                              | cost: $%-12[0m | Doanh thu: $%-12[0m | Loi Nhuan: $%[1;32m237000000[0m
 2  | Star Wars: The Force Awakens        | cost: $%-12[0m | Doanh thu: $%-12[0m | Loi Nhuan: $%[1;32m200000000[0m
 3  | Titanic                             | cost: $%-12[0m | Doanh thu: $%-12[0m | Loi Nhuan: $%[1;32m200000000[0m

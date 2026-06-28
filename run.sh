@@ -12,16 +12,21 @@ awk 'BEGIN {
     max_rev = 0;
     max_title = "";
     total_revenue = 0;
-
+    duplicate_or_invalid = 0;
 
     # triger parameter
     min_rev = 999999999999;
     min_title = "";
 }
 NR>1 {
+    id = $1;   gsub(/"/, "", id);
     gsub(/"/, "", $5);      # xoa dau ngoac neu co
     current_rev = $5 + 0;   # set number
-    total_revenue += ($5 + 0);
+    if (id ~ /^[0-9]+$/ && !seen[id]++) {
+        total_revenue += current_rev;
+    } else {
+        duplicate_or_invalid++;
+    }
     # 1. Doanh so lon nhat
     if (current_rev > max_rev) {
         max_rev = current_rev;
