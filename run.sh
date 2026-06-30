@@ -7,51 +7,58 @@ csvgrep -c vote_average -r '^(7\.[6-9]|[8-9]|10)' tmdb-movies.csv >task2_vote_av
 
 echo "task 3-4"> task3_8_result.txt
 awk 'BEGIN {
-    FPAT = "([^,]*)|(\"[^\"]*\")"; # define csv delimeter
-    # set variable
-    max_rev = 0;
-    max_title = "";
-    total_revenue = 0;
-    duplicate_or_invalid = 0;
 
-    # triger parameter
-    min_rev = 999999999999;
-    min_title = "";
+    FPAT = "([^,]*)|(\"[^\"]*\")"; 
+
+
+    total_revenue = 0;
+    max_rev = 0; max_title = "";
+    min_rev = 999999999999; min_title = "";
+    invalid_id_count = 0;
+    duplicate_or_invalid = 0;
+    zero_rev_count = 0;
 }
 NR>1 {
-    id = $1;   gsub(/"/, "", id);
-    gsub(/"/, "", $5);      # xoa dau ngoac neu co
-    current_rev = $5 + 0;   # set number
-    if (id ~ /^[0-9]+$/ && !seen[id]++) {
-        total_revenue += current_rev;
-    } else {
-        duplicate_or_invalid++;
-    }
-    # 1. Doanh so lon nhat
-    if (current_rev > max_rev) {
-        max_rev = current_rev;
-        max_title = $6;     #  original_title
-    }
 
-    # 2. Lay doanh thu nho nhat >1
-    if (current_rev > 0 && current_rev < min_rev) {
-        min_rev = current_rev;
-        min_title = $6;     # original_title
+    id = $1;       gsub(/"/, "", id);
+    rev = $5;      gsub(/"/, "", rev);
+    title = $6;    gsub(/"/, "", title);
+
+    current_rev = rev + 0;
+
+
+    if (id ~ /^[0-9]+$/ && !seen[id]++) {
+
+        if (current_rev > 0) {
+
+            total_revenue += current_rev;
+
+
+            if (current_rev > max_rev) {
+                max_rev = current_rev;
+                max_title = title;
+            }
+
+            if (current_rev < min_rev) {
+                min_rev = current_rev;
+                min_title = title;
+            }
+        } else {
+            zero_rev_count++;
+        }
+    } else {
+        invalid_id_count++;
     }
 }
 END {
-    print "=== DOANH THU LON NHAT ===";
-    print "original_title: " max_title;
-    print "revenue: $" max_rev;
-    print "";
-    print "=== DOANH THU NHO NHAT (>0) ===";
-    print "original_title: " min_title;
-    print "revenue: $" min_rev;
-    print "=====================================";
-    print " Tong doanh thu ";
-    print "=====================================";
-    # su dung printf tranh hien thi dang so mu e
-    printf "Sum: $%.2f\n", total_revenue;
+
+    print "======================================================================";
+    print "               BÁO CÁO THỐNG KÊ DOANH THU ĐÃ LỌC SẠCH DỮ LIỆU         ";
+    print "======================================================================";
+    printf "Tổng doanh thu (các phim hợp lệ) : $%.2f\n", total_revenue;
+    print "----------------------------------------------------------------------";
+    print "Phim có doanh thu LỚN NHẤT       : " max_title " ($" max_rev ")";
+    print "Phim có doanh thu NHỎ NHẤT (>0)  : " min_title " ($" min_rev ")";
 }' tmdb-movies.csv >> task3_8_result.txt
 
 awk 'BEGIN {
@@ -107,17 +114,6 @@ awk 'BEGIN { FPAT = "([^,]*)|(\"[^\"]*\")" } NR>1 {
 }' tmdb-movies.csv | sort | uniq -c | sort -nr | head -n 1 >> task3_8_result.txt
 
 
-echo "=====THONG KE THE LOAI PHIM===== " >>task3_8_result.txt
-awk 'BEGIN { 
-    FPAT = "([^,]*)|(\"[^\"]*\")"; # Định nghĩa cấu trúc cột chuẩn CSV
-} 
-NR>1 {
-    gsub(/"/, "", $14); # Xóa dấu ngoặc kép ở cột genres (cột số 2)
-    split($14, genre_list, "|"); # Tách chuỗi thể loại theo dấu "|"
-    for (i in genre_list) {
-        if (genre_list[i] != "") print genre_list[i];
-    }
-}' tmdb-movies.csv | sort | uniq -c | sort -nr | awk '{
-    # Định dạng lại văn bản để ghi vào file .txt cho đẹp mắt
-    printf "- Thể loại: %-20s | Số lượng: %s phim\n", $2, $1
-}' >>task3_8_result.txt
+echo "==========THONG KE THE LOAI PHIM===== " >>task3_8_result.txt
+csvcut -c genres tmdb-movies.csv | tail -n +2 | tr '|' '\n' | grep -v '^$' | sort | uniq -c | sort -nr  >>task3_8_result.txt
+
