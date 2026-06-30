@@ -1,0 +1,13 @@
+awk 'BEGIN { 
+    FPAT = "([^,]*)|(\"[^\"]*\")"; # Định nghĩa cấu trúc cột chuẩn CSV
+} 
+NR>1 {
+    gsub(/"/, "", $2); # Xóa dấu ngoặc kép ở cột genres (cột số 2)
+    split($2, genre_list, "|"); # Tách chuỗi thể loại theo dấu "|"
+    for (i in genre_list) {
+        if (genre_list[i] != "") print genre_list[i];
+    }
+}' tmdb-movies.csv | sort | uniq -c | sort -nr | awk '{
+    # Định dạng lại văn bản để ghi vào file .txt cho đẹp mắt
+    printf "- Thể loại: %-20s | Số lượng: %s phim\n", $2, $1
+}' > thong_ke_the_loai.txt
